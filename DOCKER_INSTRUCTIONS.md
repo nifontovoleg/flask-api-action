@@ -2,18 +2,23 @@
 
 Flask API + Nginx frontend в Docker Compose.
 
+Полное описание проекта, цели, аудитории и идей развития — в [`README.md`](./README.md).
+
 ## Структура проекта
 
 ```
-AutoDeploy/
+flask-api-action/
 ├── app.py
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
+├── .env.example
+├── .github/workflows/deploy.yml
 ├── frontend/
 │   ├── index.html
 │   └── nginx.conf
-└── DOCKER_INSTRUCTIONS.md
+├── DOCKER_INSTRUCTIONS.md
+└── README.md
 ```
 
 ## Быстрый старт с Docker Compose
@@ -60,16 +65,23 @@ docker-compose logs -f
 
 ### 4. Доступ к приложению
 
-- http://localhost:8080 — веб-интерфейс
+- http://localhost:9080 — веб-интерфейс (порт: `FRONTEND_PORT`, по умолчанию 9080)
 - http://localhost:5000 — прямой доступ к API
+
+Если порт занят, в каталоге проекта на сервере:
+
+```bash
+echo 'FRONTEND_PORT=9081' > .env
+docker compose up -d
+```
 
 ### 5. Тестирование API
 
 ```bash
-curl http://localhost:8080/api/health
-curl http://localhost:8080/api/info
-curl http://localhost:8080/api/multiply/10/5
-curl http://localhost:8080/api/divide/20/4
+curl http://localhost:9080/api/health
+curl http://localhost:9080/api/info
+curl http://localhost:9080/api/multiply/10/5
+curl http://localhost:9080/api/divide/20/4
 ```
 
 Прямой доступ к Flask:
