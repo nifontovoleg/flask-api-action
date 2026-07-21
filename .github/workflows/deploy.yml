@@ -64,6 +64,8 @@ jobs:
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"
 
+            git pull origin main
+
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 
             docker pull "$IMAGE"
