@@ -1,20 +1,20 @@
-# Используем официальный Python образ
+# Official Python image
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# curl нужен для Docker healthcheck
+# curl is required for the Docker healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем файл зависимостей и устанавливаем
+# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем приложение
+# Copy application code
 COPY app.py .
 
-# Создаем пользователя для безопасности
+# Create a non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
     chown -R appuser:appuser /app
 USER appuser

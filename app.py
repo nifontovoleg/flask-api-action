@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Простое Flask приложение для тестирования Docker контейнера
+Simple Flask app for testing a Docker container.
 """
 
 from flask import Flask, jsonify
@@ -13,9 +13,9 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    """Главная страница с информацией о контейнере"""
+    """Home endpoint with container information."""
     return jsonify({
-        'message': 'Приложение успешно запущено в Docker контейнере!',
+        'message': 'Application is running successfully in a Docker container!',
         'timestamp': datetime.datetime.now().isoformat(),
         'python_version': platform.python_version(),
         'platform': platform.platform(),
@@ -26,7 +26,7 @@ def home():
 
 @app.route('/health')
 def health():
-    """Эндпоинт для проверки здоровья приложения"""
+    """Healthcheck endpoint."""
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.datetime.now().isoformat()
@@ -35,7 +35,7 @@ def health():
 
 @app.route('/info')
 def info():
-    """Информация о системе"""
+    """System information endpoint."""
     return jsonify({
         'python_version': platform.python_version(),
         'platform': platform.platform(),
