@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -155,41 +155,41 @@
 <div class="container">
   <header>
     <h1>Docker Test App</h1>
-    <p>Веб-интерфейс к Flask API через Nginx-прокси (<code>/api</code>)</p>
+    <p>Web UI for the Flask API via Nginx proxy (<code>/api</code>)</p>
   </header>
 
   <div class="status-bar">
     <span class="dot" id="healthDot"></span>
-    <span id="healthText">Проверка статуса...</span>
-    <span class="hint" id="autoHint">автообновление каждые 10 с</span>
+    <span id="healthText">Checking status...</span>
+    <span class="hint" id="autoHint">auto-refresh every 10s</span>
   </div>
 
   <div class="grid">
     <div class="panel">
-      <h2>API-запросы</h2>
+      <h2>API requests</h2>
       <div class="actions">
         <button onclick="checkHealth()">Health</button>
         <button onclick="getHomeInfo()">Home</button>
         <button onclick="getSystemInfo()">System Info</button>
       </div>
-      <p class="hint">Запросы идут на <code>/api/...</code> → Flask backend</p>
+      <p class="hint">Requests go to <code>/api/...</code> → Flask backend</p>
     </div>
 
     <div class="panel">
-      <h2>Калькулятор</h2>
+      <h2>Calculator</h2>
       <div class="calc-row">
         <input type="number" id="numA" value="10" />
         <input type="number" id="numB" value="5" />
-        <button onclick="multiply()">× Умножить</button>
-        <button onclick="divide()">÷ Делить</button>
+        <button onclick="multiply()">× Multiply</button>
+        <button onclick="divide()">÷ Divide</button>
       </div>
-      <p class="hint">Эндпоинты <code>/multiply/a/b</code> и <code>/divide/a/b</code></p>
+      <p class="hint">Endpoints <code>/multiply/a/b</code> and <code>/divide/a/b</code></p>
     </div>
   </div>
 
   <div class="panel">
-    <h2>Ответ API</h2>
-    <pre id="output">Нажмите кнопку, чтобы выполнить запрос...</pre>
+    <h2>API response</h2>
+    <pre id="output">Click a button to send a request...</pre>
   </div>
 </div>
 
@@ -223,7 +223,7 @@ async function checkHealth() {
     showResult(data);
   } catch (err) {
     healthDot.className = 'dot err';
-    healthText.textContent = 'API недоступен';
+    healthText.textContent = 'API unavailable';
     showResult(err.data || err.message || String(err), true);
   }
 }
@@ -250,7 +250,7 @@ function getNumbers() {
   const a = parseInt(document.getElementById('numA').value, 10);
   const b = parseInt(document.getElementById('numB').value, 10);
   if (Number.isNaN(a) || Number.isNaN(b)) {
-    throw new Error('Введите корректные числа');
+    throw new Error('Enter valid numbers');
   }
   return { a, b };
 }

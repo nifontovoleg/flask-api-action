@@ -1,10 +1,10 @@
-# Docker Test App — инструкция по запуску
+# Docker Test App — Runbook
 
-Flask API + Nginx frontend в Docker Compose.
+Flask API + Nginx frontend with Docker Compose.
 
-Полное описание проекта, цели, аудитории и идей развития — в [`README.md`](./README.md).
+Full project overview (purpose, audience, roadmap): [`README.md`](./README.md).
 
-## Структура проекта
+## Project structure
 
 ```
 flask-api-action/
@@ -21,61 +21,61 @@ flask-api-action/
 └── README.md
 ```
 
-## Быстрый старт с Docker Compose
+## Quick start with Docker Compose
 
-### 1. Запуск всех сервисов
-
-```bash
-docker-compose up -d
-```
-
-При первом запуске образ backend соберётся локально (`build: .`) или подтянется из GHCR: `ghcr.io/nifontovoleg/flask-api-action:latest`.
-
-## GitHub Actions: деплой по SSH
-
-Workflow `.github/workflows/deploy.yml` после push в `main`:
-1. собирает и пушит образ в GHCR;
-2. по SSH обновляет контейнеры на сервере.
-
-Секреты репозитория (Settings → Secrets and variables → Actions):
-
-| Secret | Описание |
-|--------|----------|
-| `SSH_HOST` | IP или хост сервера |
-| `SSH_USER` | SSH-пользователь |
-| `SSH_PRIVATE_KEY` | Приватный ключ (весь PEM) |
-| `DEPLOY_PATH` | Путь к проекту на сервере (где лежит `docker-compose.yml`) |
-| `GHCR_TOKEN` | PAT с правом `read:packages` (для `docker login` на сервере) |
-
-`SSH_PORT` добавлять не нужно: appleboy/ssh-action использует порт **22** по умолчанию. Указывай секрет только если SSH слушает нестандартный порт.
-
-На сервере заранее должны быть Docker, Docker Compose и клон репозитория в `DEPLOY_PATH`.
-
-### 2. Проверка статуса
+### 1. Start all services
 
 ```bash
-docker-compose ps
+docker compose up -d
 ```
 
-### 3. Просмотр логов
+On first run the backend image is built locally (`build: .`) or pulled from GHCR: `ghcr.io/nifontovoleg/flask-api-action:latest`.
+
+## GitHub Actions: SSH deploy
+
+Workflow `.github/workflows/deploy.yml` on push to `main` / `develop`:
+1. builds and pushes the image to GHCR;
+2. updates containers on the server over SSH.
+
+Repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+|--------|-------------|
+| `SSH_HOST` | Server IP or hostname |
+| `SSH_USER` | SSH username |
+| `SSH_PRIVATE_KEY` | Full private key (PEM) |
+| `DEPLOY_PATH` | Project path on the server (where `docker-compose.yml` lives) |
+| `GHCR_TOKEN` | PAT with `read:packages` (for `docker login` on the server) |
+
+Do not add `SSH_PORT`: appleboy/ssh-action uses port **22** by default. Set it only for a non-standard SSH port.
+
+The server must already have Docker, Docker Compose, and a clone of this repo in `DEPLOY_PATH`.
+
+### 2. Check status
 
 ```bash
-docker-compose logs -f
+docker compose ps
 ```
 
-### 4. Доступ к приложению
+### 3. View logs
 
-- http://localhost:9080 — веб-интерфейс (порт: `FRONTEND_PORT`, по умолчанию 9080)
-- http://localhost:5000 — прямой доступ к API
+```bash
+docker compose logs -f
+```
 
-Если порт занят, в каталоге проекта на сервере:
+### 4. Access the app
+
+- http://localhost:9080 — web UI (`FRONTEND_PORT`, default 9080)
+- http://localhost:5000 — direct API access
+
+If the port is busy, in the project directory on the server:
 
 ```bash
 echo 'FRONTEND_PORT=9081' > .env
 docker compose up -d
 ```
 
-### 5. Тестирование API
+### 5. Test the API
 
 ```bash
 curl http://localhost:9080/api/health
@@ -84,50 +84,50 @@ curl http://localhost:9080/api/multiply/10/5
 curl http://localhost:9080/api/divide/20/4
 ```
 
-Прямой доступ к Flask:
+Direct Flask access:
 
 ```bash
 curl http://localhost:5000/health
 curl http://localhost:5000/info
 ```
 
-### 6. Остановка
+### 6. Stop
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
-### 7. Пересборка и запуск
+### 7. Rebuild and start
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
-## Публикация образа Flask в Docker Hub
+## Publish Flask image to Docker Hub (optional)
 
 ```bash
-# Авторизация в Docker Hub
+# Docker Hub login
 docker login
 
-# Сборка образа с тегом
+# Build with a tag
 docker build -t argonpower/flask-test-app:latest .
 
-# Пуш в Docker Hub
+# Push to Docker Hub
 docker push argonpower/flask-test-app:latest
 ```
 
-Образ: https://hub.docker.com/r/argonpower/flask-test-app
+Image: https://hub.docker.com/r/argonpower/flask-test-app
 
-Запуск без Compose:
+Run without Compose:
 
 ```bash
 docker run -d -p 5000:5000 --name flask-backend argonpower/flask-test-app:latest
 ```
 
-## Важные моменты
+## Important notes
 
-- Веб-интерфейс обращается к API через Nginx (`/api`), чтобы избежать ошибок `net::ERR_NAME_NOT_RESOLVED`.
-- Flask слушает порт `5000` внутри сети Compose.
-- Nginx проксирует `/api/` → `http://backend:5000/`.
-- Автообновление health на фронтенде — каждые 10 секунд.
-- Healthcheck backend использует `curl`; frontend — `wget`.
+- The web UI calls the API through Nginx (`/api`) to avoid `net::ERR_NAME_NOT_RESOLVED`.
+- Flask listens on port `5000` inside the Compose network.
+- Nginx proxies `/api/` → `http://backend:5000/`.
+- Frontend health auto-refresh runs every 10 seconds.
+- Backend healthcheck uses `curl`; frontend uses `wget`.

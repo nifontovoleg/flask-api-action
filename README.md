@@ -1,6 +1,6 @@
 # Flask API Action
 
-> Учебный стенд полного цикла: **Flask API → Docker → GHCR → GitHub Actions → деплой на VPS по SSH → Nginx UI**.
+> End-to-end learning lab: **Flask API → Docker → GHCR → GitHub Actions → SSH deploy to a VPS → Nginx UI**.
 
 [![Build and Push to GHCR](https://github.com/nifontovoleg/flask-api-action/actions/workflows/deploy.yml/badge.svg)](https://github.com/nifontovoleg/flask-api-action/actions/workflows/deploy.yml)
 [![GHCR](https://img.shields.io/badge/GHCR-flask--api--action-blue)](https://github.com/nifontovoleg/flask-api-action/pkgs/container/flask-api-action)
@@ -8,144 +8,144 @@
 [![Flask](https://img.shields.io/badge/Flask-2.3-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 
-Образ: `ghcr.io/nifontovoleg/flask-api-action:latest`
+Image: `ghcr.io/nifontovoleg/flask-api-action:latest`
 
 ---
 
-## Оглавление
+## Table of contents
 
-- [Зачем этот проект](#зачем-этот-проект)
-- [Для кого](#для-кого)
-- [Что внутри](#что-внутри)
-- [Как это работает](#как-это-работает)
-- [Структура репозитория](#структура-репозитория)
+- [Why this project](#why-this-project)
+- [Who it is for](#who-it-is-for)
+- [What's inside](#whats-inside)
+- [How it works](#how-it-works)
+- [Repository structure](#repository-structure)
 - [API](#api)
-- [Быстрый старт локально](#быстрый-старт-локально)
-- [CI/CD и деплой на сервер](#cicd-и-деплой-на-сервер)
-- [Как применять](#как-применять)
-- [Как развивать](#как-развивать)
-- [Частые проблемы](#частые-проблемы)
-- [Полезные команды](#полезные-команды)
+- [Quick start (local)](#quick-start-local)
+- [CI/CD and server deploy](#cicd-and-server-deploy)
+- [How to use it](#how-to-use-it)
+- [How to extend it](#how-to-extend-it)
+- [Common issues](#common-issues)
+- [Useful commands](#useful-commands)
 
 ---
 
-## Зачем этот проект
+## Why this project
 
-Это **не коммерческий продукт**, а рабочий тренажёр DevOps-пайплайна.
+This is **not a commercial product**. It is a practical DevOps training lab.
 
-Цель — на простом и понятном примере пройти путь от кода до боевого сервера:
+The goal is to walk through a clear path from code to a live server:
 
-1. написать небольшой Flask API;
-2. упаковать его в Docker;
-3. автоматически собрать образ в GitHub Actions;
-4. опубликовать образ в **GitHub Container Registry (GHCR)**;
-5. по SSH обновить контейнеры на VPS;
-6. открыть веб-интерфейс через Nginx, который проксирует запросы к API.
+1. write a small Flask API;
+2. package it with Docker;
+3. build the image automatically in GitHub Actions;
+4. publish it to **GitHub Container Registry (GHCR)**;
+5. update containers on a VPS over SSH;
+6. open a web UI through Nginx that proxies requests to the API.
 
-Backend специально простой (`/health`, `/info`, `/multiply`, `/divide`), чтобы всё внимание было на инфраструктуре, а не на бизнес-логике.
+The backend is intentionally simple (`/health`, `/info`, `/multiply`, `/divide`) so the focus stays on infrastructure, not business logic.
 
 ---
 
-## Для кого
+## Who it is for
 
-| Кому полезно | Зачем |
+| Audience | Why it helps |
 |---|---|
-| Новички в Docker / Compose | Увидеть связку backend + frontend в одной сети |
-| Те, кто осваивает GitHub Actions | Готовый workflow: build → push → SSH deploy |
-| Люди с VPS | Отработать auto-deploy без Kubernetes |
-| Портфолио / собеседования | Показать полный цикл «от push до продакшена» |
-| Разработчики своего API | Взять каркас и заменить demo-эндпоинты на реальный сервис |
+| Docker / Compose beginners | See backend + frontend in one Compose network |
+| People learning GitHub Actions | Ready workflow: build → push → SSH deploy |
+| VPS users | Practice auto-deploy without Kubernetes |
+| Portfolio / interviews | Show a full “push → production” cycle |
+| API developers | Reuse the skeleton and replace demo endpoints |
 
-Если нужно «просто поднять API в Docker и научиться деплоить» — этот репозиторий как раз для этого.
+If you want to “spin up an API in Docker and learn how to deploy it” — this repo is for you.
 
 ---
 
-## Что внутри
+## What's inside
 
-| Компонент | Технология | Роль |
+| Component | Stack | Role |
 |---|---|---|
 | Backend | Python 3.11 + Flask | JSON API |
-| Frontend | HTML/JS + Nginx | UI и reverse-proxy `/api` → Flask |
-| Контейнеризация | Dockerfile + Docker Compose | Локальный и серверный запуск |
-| Реестр образов | GHCR | Хранение `latest` и SHA-тегов |
-| CI/CD | GitHub Actions | Сборка, пуш, деплой по SSH |
-| Деплой | `appleboy/ssh-action` | Обновление контейнеров на сервере |
+| Frontend | HTML/JS + Nginx | UI and reverse proxy `/api` → Flask |
+| Containers | Dockerfile + Docker Compose | Local and server runtime |
+| Registry | GHCR | Stores `latest` and SHA tags |
+| CI/CD | GitHub Actions | Build, push, SSH deploy |
+| Deploy | `appleboy/ssh-action` | Updates containers on the server |
 
 ---
 
-## Как это работает
+## How it works
 
 ```mermaid
 flowchart LR
-  A[Push в main / develop] --> B[GitHub Actions]
+  A[Push to main / develop] --> B[GitHub Actions]
   B --> C[Build Docker image]
-  C --> D[Push в GHCR]
-  D --> E[SSH на VPS]
+  C --> D[Push to GHCR]
+  D --> E[SSH to VPS]
   E --> F[git pull + docker compose up]
   F --> G[Nginx :9080]
   G --> H[Flask :5000]
 ```
 
-### Поток запроса в браузере
+### Browser request flow
 
-1. Открываешь `http://<хост>:9080`
-2. UI ходит в `/api/...`
-3. Nginx проксирует на `http://backend:5000/...`
-4. Flask отвечает JSON
+1. Open `http://<host>:9080`
+2. UI calls `/api/...`
+3. Nginx proxies to `http://backend:5000/...`
+4. Flask returns JSON
 
-Так фронтенд не обращается к имени контейнера напрямую из браузера — нет ошибки `net::ERR_NAME_NOT_RESOLVED`.
+The frontend never talks to the container hostname from the browser, so you avoid `net::ERR_NAME_NOT_RESOLVED`.
 
 ---
 
-## Структура репозитория
+## Repository structure
 
 ```text
 flask-api-action/
 ├── app.py                       # Flask API
-├── requirements.txt             # Зависимости Python
-├── Dockerfile                   # Образ backend
+├── requirements.txt             # Python dependencies
+├── Dockerfile                   # Backend image
 ├── docker-compose.yml           # backend + nginx frontend
-├── .env.example                 # Пример FRONTEND_PORT
+├── .env.example                 # FRONTEND_PORT example
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml           # Build → GHCR → SSH deploy
 ├── frontend/
-│   ├── index.html               # Веб-интерфейс
+│   ├── index.html               # Web UI
 │   └── nginx.conf               # Proxy /api → backend
-├── DOCKER_INSTRUCTIONS.md       # Краткая Docker-шпаргалка
-└── README.md                    # Этот файл
+├── DOCKER_INSTRUCTIONS.md       # Short Docker cheat sheet
+└── README.md                    # This file
 ```
 
 ---
 
 ## API
 
-Базовый URL через Nginx: `/api`  
-Прямой доступ к Flask: порт `5000`
+Base URL via Nginx: `/api`  
+Direct Flask access: port `5000`
 
-| Метод | Путь | Описание |
+| Method | Path | Description |
 |---|---|---|
-| `GET` | `/` | Информация о контейнере и окружении |
+| `GET` | `/` | Container and environment info |
 | `GET` | `/health` | Healthcheck (`status: healthy`) |
-| `GET` | `/info` | Версия Python, платформа, hostname |
-| `GET` | `/multiply/<a>/<b>` | Умножение двух чисел |
-| `GET` | `/divide/<a>/<b>` | Деление (при `b=0` → `400`) |
+| `GET` | `/info` | Python version, platform, hostname |
+| `GET` | `/multiply/<a>/<b>` | Multiply two numbers |
+| `GET` | `/divide/<a>/<b>` | Divide (`b=0` → `400`) |
 
-### Примеры
+### Examples
 
 ```bash
-# через Nginx
+# via Nginx
 curl http://localhost:9080/api/health
 curl http://localhost:9080/api/info
 curl http://localhost:9080/api/multiply/10/5
 curl http://localhost:9080/api/divide/20/4
 
-# напрямую в Flask
+# direct Flask
 curl http://localhost:5000/health
 curl http://localhost:5000/info
 ```
 
-Ответ `/multiply/10/5`:
+`/multiply/10/5` response:
 
 ```json
 { "result": 50 }
@@ -153,190 +153,190 @@ curl http://localhost:5000/info
 
 ---
 
-## Быстрый старт локально
+## Quick start (local)
 
-### Требования
+### Requirements
 
 - Docker
 - Docker Compose plugin (`docker compose`)
 
-### 1. Клонировать
+### 1. Clone
 
 ```bash
 git clone https://github.com/nifontovoleg/flask-api-action.git
 cd flask-api-action
 ```
 
-### 2. (Опционально) Порт фронтенда
+### 2. (Optional) Frontend port
 
-По умолчанию UI на **9080**. Если порт занят:
+UI defaults to **9080**. If the port is busy:
 
 ```bash
 cp .env.example .env
 # FRONTEND_PORT=9081
 ```
 
-### 3. Запустить
+### 3. Start
 
 ```bash
 docker compose up -d --build
 ```
 
-### 4. Проверить
+### 4. Verify
 
 ```bash
 docker compose ps
 curl http://localhost:9080/api/health
 ```
 
-Открыть в браузере: [http://localhost:9080](http://localhost:9080)
+Open in browser: [http://localhost:9080](http://localhost:9080)
 
-### 5. Остановить
+### 5. Stop
 
 ```bash
 docker compose down
 ```
 
-Подробная Docker-шпаргалка: [`DOCKER_INSTRUCTIONS.md`](./DOCKER_INSTRUCTIONS.md)
+Docker cheat sheet: [`DOCKER_INSTRUCTIONS.md`](./DOCKER_INSTRUCTIONS.md)
 
 ---
 
-## CI/CD и деплой на сервер
+## CI/CD and server deploy
 
-При push в ветки **`main`** или **`develop`** workflow:
+On push to **`main`** or **`develop`**, the workflow:
 
-1. собирает Docker-образ;
-2. пушит в `ghcr.io/nifontovoleg/flask-api-action`;
-3. по SSH заходит на сервер;
-4. делает `git pull` нужной ветки;
-5. логинится в GHCR;
-6. обновляет контейнеры (`docker compose up -d`).
+1. builds the Docker image;
+2. pushes it to `ghcr.io/nifontovoleg/flask-api-action`;
+3. connects to the server over SSH;
+4. runs `git pull` for the pushed branch;
+5. logs in to GHCR;
+6. updates containers (`docker compose up -d`).
 
-### Секреты репозитория
+### Repository secrets
 
 Settings → Secrets and variables → Actions:
 
-| Secret | Обязательный | Описание |
+| Secret | Required | Description |
 |---|---|---|
-| `SSH_HOST` | да | IP или hostname сервера |
-| `SSH_USER` | да | SSH-пользователь |
-| `SSH_PRIVATE_KEY` | да | Приватный ключ целиком (PEM) |
-| `DEPLOY_PATH` | да | Путь к проекту на сервере, например `/opt/flask-api-action` |
-| `GHCR_TOKEN` | да | PAT с правом `read:packages` (для `docker login` на сервере) |
+| `SSH_HOST` | yes | Server IP or hostname |
+| `SSH_USER` | yes | SSH username |
+| `SSH_PRIVATE_KEY` | yes | Full private key (PEM) |
+| `DEPLOY_PATH` | yes | Project path on server, e.g. `/opt/flask-api-action` |
+| `GHCR_TOKEN` | yes | PAT with `read:packages` (for `docker login` on the server) |
 
-`SSH_PORT` **добавлять не нужно**: `appleboy/ssh-action` использует порт **22** по умолчанию. Секрет нужен только если SSH слушает другой порт.
+Do **not** add `SSH_PORT`: `appleboy/ssh-action` uses port **22** by default. Add it only if SSH listens on a non-standard port.
 
-### Подготовка сервера (один раз)
+### One-time server setup
 
 ```bash
-# клон в выбранный каталог
+# clone into the chosen directory
 sudo mkdir -p /opt/flask-api-action
 sudo chown "$USER":"$USER" /opt/flask-api-action
 git clone https://github.com/nifontovoleg/flask-api-action.git /opt/flask-api-action
 
-# на сервере должны быть Docker и Compose
+# Docker and Compose must be installed
 docker --version
 docker compose version
 ```
 
-В секретах:
+Secret value:
 
 ```text
 DEPLOY_PATH=/opt/flask-api-action
 ```
 
-После успешного деплоя:
+After a successful deploy:
 
-- UI: `http://<IP-сервера>:9080`
-- API: `http://<IP-сервера>:5000`
+- UI: `http://<server-ip>:9080`
+- API: `http://<server-ip>:5000`
 
 ---
 
-## Как применять
+## How to use it
 
-### 1. Как учебный стенд
+### 1. As a learning lab
 
-Подними локально, пощёлкай кнопки в UI, посмотри логи Compose и Actions. Разбери `deploy.yml` по шагам.
+Run it locally, click UI buttons, inspect Compose logs and Actions runs. Walk through `deploy.yml` step by step.
 
-### 2. Как шаблон auto-deploy
+### 2. As an auto-deploy template
 
-Скопируй структуру под свой сервис:
+Copy the structure for your own service:
 
-- оставь Dockerfile / Compose / workflow;
-- замени `app.py` на свой backend;
-- при необходимости поменяй frontend.
+- keep Dockerfile / Compose / workflow;
+- replace `app.py` with your backend;
+- update the frontend if needed.
 
-### 3. Как демо для портфолио
+### 3. As a portfolio demo
 
-Покажи связку:
+Show the chain:
 
 ```text
-код → образ → реестр → сервер → UI
+code → image → registry → server → UI
 ```
 
-Это сильный и понятный кейс для резюме и собеседований.
+A clear, interview-friendly case.
 
-### 4. Как база для своего API
+### 4. As a base for your API
 
-Начни с этого каркаса и наращивай: БД, auth, домен, HTTPS. Инфраструктурный скелет уже есть.
+Start from this skeleton and grow: database, auth, domain, HTTPS. The infra backbone is already here.
 
 ---
 
-## Как развивать
+## How to extend it
 
-Идеи по приоритету — от простого к production.
+Ideas from simple to production-ready.
 
 ### Backend
 
-- перейти на **FastAPI** (async, OpenAPI из коробки);
-- добавить PostgreSQL + SQLAlchemy 2.x;
-- убрать отдачу всего `os.environ` наружу (сейчас это demo);
-- валидация входа (Pydantic), нормальные коды ошибок;
+- move to **FastAPI** (async, OpenAPI out of the box);
+- add PostgreSQL + SQLAlchemy 2.x;
+- stop exposing full `os.environ` (demo-only today);
+- input validation (Pydantic) and proper error codes;
 - JWT / API keys.
 
 ### Frontend
 
-- заменить одну HTML-страницу на SPA (React / Vue);
-- красивые формы, история запросов, тёмная/светлая тема;
-- отдельный stage сборки статики в Docker.
+- replace the single HTML page with an SPA (React / Vue);
+- better forms, request history, themes;
+- dedicated static build stage in Docker.
 
-### Инфраструктура
+### Infrastructure
 
-- HTTPS через Caddy / Traefik / Nginx + Let's Encrypt;
-- домен вместо IP:port;
-- staging-окружение отдельно от production;
-- healthchecks → алерты (Telegram / email);
-- backup и rollback по тегу образа (`:sha-...` уже пушится).
+- HTTPS via Caddy / Traefik / Nginx + Let's Encrypt;
+- domain instead of IP:port;
+- staging separate from production;
+- healthchecks → alerts (Telegram / email);
+- backup and rollback by image tag (`:sha-...` is already pushed).
 
 ### CI/CD
 
-- прогон тестов и линтера **до** деплоя;
-- деплой только с `main`, `develop` — только staging;
-- ручной approve на production (`environment: production`);
-- `docker compose` с разными override-файлами.
+- run tests and linters **before** deploy;
+- deploy production only from `main`, use `develop` for staging;
+- manual approval for production (`environment: production`);
+- Compose overrides per environment.
 
-### Безопасность
+### Security
 
-- не светить секреты в `/` и логах;
-- ограничить CORS;
-- rate limit;
-- non-root в контейнере (уже есть `appuser`);
-- сканирование образа (Trivy) в CI.
+- never leak secrets via `/` or logs;
+- tighten CORS;
+- rate limiting;
+- non-root user in the container (already `appuser`);
+- image scanning (Trivy) in CI.
 
-### Масштаб
+### Scale
 
-- несколько реплик backend за reverse-proxy;
-- внешняя БД / Redis;
-- метрики Prometheus + Grafana;
-- при росте — Kubernetes (но для учебного стенда Compose обычно достаточно).
+- multiple backend replicas behind a reverse proxy;
+- external DB / Redis;
+- Prometheus + Grafana metrics;
+- Kubernetes later (Compose is usually enough for this lab).
 
 ---
 
-## Частые проблемы
+## Common issues
 
 ### `Bind for 0.0.0.0:80` / `:8080` / `:9080` failed
 
-Порт на сервере уже занят. Смени `FRONTEND_PORT`:
+The host port is already taken. Change `FRONTEND_PORT`:
 
 ```bash
 cd /opt/flask-api-action
@@ -344,25 +344,25 @@ echo 'FRONTEND_PORT=9081' > .env
 docker compose up -d
 ```
 
-Проверка занятых портов:
+Check busy ports:
 
 ```bash
 ss -tlnp | grep -E ':(80|8080|9080)\s'
 ```
 
-### Workflow падает на SSH
+### Workflow fails on SSH
 
-Проверь секреты `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `DEPLOY_PATH`.  
-Публичный ключ должен быть в `~/.ssh/authorized_keys` на сервере.
+Check `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `DEPLOY_PATH`.  
+The public key must be in `~/.ssh/authorized_keys` on the server.
 
-### `denied` при `docker pull` с GHCR
+### `denied` on `docker pull` from GHCR
 
-Нужен `GHCR_TOKEN` (PAT) с `read:packages`.  
-Пакет в GitHub Packages при необходимости сделай public: Package settings → Change visibility.
+You need `GHCR_TOKEN` (PAT) with `read:packages`.  
+If needed, make the package public: Package settings → Change visibility.
 
-### UI открывается, API не отвечает
+### UI loads, API does not respond
 
-Проверь, что backend healthy:
+Check backend health:
 
 ```bash
 docker compose ps
@@ -372,27 +372,27 @@ curl http://localhost:5000/health
 
 ---
 
-## Полезные команды
+## Useful commands
 
 ```bash
-# статус
+# status
 docker compose ps
 
-# логи
+# logs
 docker compose logs -f
 docker compose logs -f backend
 
-# пересборка
+# rebuild
 docker compose up -d --build
 
-# только backend из GHCR
+# pull backend only from GHCR
 docker pull ghcr.io/nifontovoleg/flask-api-action:latest
 
-# остановка и очистка контейнеров проекта
+# stop and remove project containers
 docker compose down
 ```
 
-### Ручная сборка и пуш образа
+### Manual image build and push
 
 ```bash
 docker login ghcr.io
@@ -402,18 +402,18 @@ docker push ghcr.io/nifontovoleg/flask-api-action:latest
 
 ---
 
-## Лицензия и статус
+## License and status
 
-Учебный / демонстрационный проект. Используй свободно как основу для своих экспериментов и сервисов.
+Learning / demo project. Use it freely as a base for experiments and services.
 
-Если будешь развивать форк — имеет смысл сразу:
+If you fork it for something real, consider doing this first:
 
-1. убрать demo-утечку окружения из `/`;
-2. повесить HTTPS;
-3. добавить хотя бы smoke-тесты в CI.
+1. remove the demo environment dump from `/`;
+2. enable HTTPS;
+3. add at least smoke tests in CI.
 
 ---
 
-**Автор:** [nifontovoleg](https://github.com/nifontovoleg)  
-**Репозиторий:** [github.com/nifontovoleg/flask-api-action](https://github.com/nifontovoleg/flask-api-action)  
-**Образ:** [ghcr.io/nifontovoleg/flask-api-action](https://github.com/nifontovoleg/flask-api-action/pkgs/container/flask-api-action)
+**Author:** [nifontovoleg](https://github.com/nifontovoleg)  
+**Repository:** [github.com/nifontovoleg/flask-api-action](https://github.com/nifontovoleg/flask-api-action)  
+**Image:** [ghcr.io/nifontovoleg/flask-api-action](https://github.com/nifontovoleg/flask-api-action/pkgs/container/flask-api-action)
