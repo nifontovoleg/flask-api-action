@@ -24,7 +24,26 @@ AutoDeploy/
 docker-compose up -d
 ```
 
-При первом запуске образ backend соберётся локально (`build: .`) или подтянется с Docker Hub: `argonpower/flask-test-app:latest`.
+При первом запуске образ backend соберётся локально (`build: .`) или подтянется из GHCR: `ghcr.io/nifontovoleg/flask-api-action:latest`.
+
+## GitHub Actions: деплой по SSH
+
+Workflow `.github/workflows/deploy.yml` после push в `main`:
+1. собирает и пушит образ в GHCR;
+2. по SSH обновляет контейнеры на сервере.
+
+Секреты репозитория (Settings → Secrets and variables → Actions):
+
+| Secret | Описание |
+|--------|----------|
+| `SSH_HOST` | IP или хост сервера |
+| `SSH_USER` | SSH-пользователь |
+| `SSH_PRIVATE_KEY` | Приватный ключ (весь PEM) |
+| `SSH_PORT` | Порт SSH (обычно `22`) |
+| `DEPLOY_PATH` | Путь к проекту на сервере (где лежит `docker-compose.yml`) |
+| `GHCR_TOKEN` | PAT с правом `read:packages` (для `docker login` на сервере) |
+
+На сервере заранее должны быть Docker, Docker Compose и клон репозитория в `DEPLOY_PATH`.
 
 ### 2. Проверка статуса
 
