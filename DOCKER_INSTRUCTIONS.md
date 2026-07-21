@@ -2,18 +2,23 @@
 
 Flask API + Nginx frontend в Docker Compose.
 
+Полное описание проекта, цели, аудитории и идей развития — в [`README.md`](./README.md).
+
 ## Структура проекта
 
 ```
-AutoDeploy/
+flask-api-action/
 ├── app.py
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
+├── .env.example
+├── .github/workflows/deploy.yml
 ├── frontend/
 │   ├── index.html
 │   └── nginx.conf
-└── DOCKER_INSTRUCTIONS.md
+├── DOCKER_INSTRUCTIONS.md
+└── README.md
 ```
 
 ## Быстрый старт с Docker Compose
