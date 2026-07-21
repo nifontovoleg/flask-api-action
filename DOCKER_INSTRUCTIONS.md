@@ -59,16 +59,16 @@ docker-compose logs -f
 
 ### 4. Доступ к приложению
 
-- http://localhost — веб-интерфейс
+- http://localhost:8080 — веб-интерфейс
 - http://localhost:5000 — прямой доступ к API
 
 ### 5. Тестирование API
 
 ```bash
-curl http://localhost/api/health
-curl http://localhost/api/info
-curl http://localhost/api/multiply/10/5
-curl http://localhost/api/divide/20/4
+curl http://localhost:8080/api/health
+curl http://localhost:8080/api/info
+curl http://localhost:8080/api/multiply/10/5
+curl http://localhost:8080/api/divide/20/4
 ```
 
 Прямой доступ к Flask:
