@@ -39,9 +39,10 @@ Workflow `.github/workflows/deploy.yml` после push в `main`:
 | `SSH_HOST` | IP или хост сервера |
 | `SSH_USER` | SSH-пользователь |
 | `SSH_PRIVATE_KEY` | Приватный ключ (весь PEM) |
-| `SSH_PORT` | Порт SSH (обычно `22`) |
 | `DEPLOY_PATH` | Путь к проекту на сервере (где лежит `docker-compose.yml`) |
 | `GHCR_TOKEN` | PAT с правом `read:packages` (для `docker login` на сервере) |
+
+`SSH_PORT` добавлять не нужно: appleboy/ssh-action использует порт **22** по умолчанию. Указывай секрет только если SSH слушает нестандартный порт.
 
 На сервере заранее должны быть Docker, Docker Compose и клон репозитория в `DEPLOY_PATH`.
 
